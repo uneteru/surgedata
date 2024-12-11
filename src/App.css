@@ -89,9 +89,9 @@
   font-family: 'Courier New', monospace;
 }
 
-.info-value.bnb::after {
-  content: ' BNB';
-  color: #F3BA2F;
+.info-value.srg::after {
+  content: ' SRG';
+  color: #FF69B4;
   font-size: 0.9rem;
   margin-left: 0.5rem;
 }
