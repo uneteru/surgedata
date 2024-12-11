@@ -55,9 +55,9 @@ const TokenInfo: React.FC = () => {
                 setTokenData({
                     name,
                     price: formatPrice(price),
-                    marketCap: formatNumber(web3.utils.fromWei(marketCap, 'ether')),
-                    circulatingSupply: formatNumber(web3.utils.fromWei(circulatingSupply, 'ether')),
-                    liquidity: formatNumber(web3.utils.fromWei(liquidity, 'ether'))
+                    marketCap: formatPrice(marketCap),
+                    circulatingSupply,
+                    liquidity
                 });
             } catch (err) {
                 setError('Error fetching token data: ' + (err as Error).message);
@@ -67,47 +67,44 @@ const TokenInfo: React.FC = () => {
         fetchTokenData();
     }, []);
 
-    if (error) {
-        return (
-            <div className="text-cyber-pink font-mono p-4 border border-cyber-pink rounded">
-                Error: {error}
-            </div>
-        );
-    }
-
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-cyber-darker font-mono">
-            <div className="cyber-box p-8 w-full max-w-2xl backdrop-blur-sm">
-                <h2 className="text-3xl font-bold mb-8 text-center text-cyber-pink border-b border-cyber-blue pb-4">
-                    Token Analytics
-                </h2>
-                <div className="grid gap-6">
-                    <div className="cyber-box p-4 hover:shadow-neon-pink transition-shadow duration-300">
-                        <div className="text-sm text-cyber-blue opacity-80">Name</div>
-                        <div className="cyber-value text-xl">{tokenData.name || 'Loading...'}</div>
-                    </div>
-                    
-                    <div className="cyber-box p-4 hover:shadow-neon-pink transition-shadow duration-300">
-                        <div className="text-sm text-cyber-blue opacity-80">Price</div>
-                        <div className="cyber-value text-xl">{tokenData.price || 'Loading...'} BNB</div>
-                    </div>
-                    
-                    <div className="cyber-box p-4 hover:shadow-neon-pink transition-shadow duration-300">
-                        <div className="text-sm text-cyber-blue opacity-80">Market Cap</div>
-                        <div className="cyber-value text-xl">${tokenData.marketCap || 'Loading...'}</div>
-                    </div>
-                    
-                    <div className="cyber-box p-4 hover:shadow-neon-pink transition-shadow duration-300">
-                        <div className="text-sm text-cyber-blue opacity-80">Circulating Supply</div>
-                        <div className="cyber-value text-xl">{tokenData.circulatingSupply || 'Loading...'}</div>
-                    </div>
-                    
-                    <div className="cyber-box p-4 hover:shadow-neon-pink transition-shadow duration-300">
-                        <div className="text-sm text-cyber-blue opacity-80">Liquidity</div>
-                        <div className="cyber-value text-xl">${tokenData.liquidity || 'Loading...'}</div>
-                    </div>
+        <div className="token-analytics">
+            <h2>Token Analytics</h2>
+            
+            <div className="info-row">
+                <div className="info-label">Name</div>
+                <div className="info-value">{tokenData.name || 'Loading...'}</div>
+            </div>
+
+            <div className="info-row">
+                <div className="info-label">Price</div>
+                <div className="info-value bnb">
+                    {tokenData.price ? formatNumber(tokenData.price) : 'Loading...'}
                 </div>
             </div>
+
+            <div className="info-row">
+                <div className="info-label">Market Cap</div>
+                <div className="info-value">
+                    ${tokenData.marketCap ? formatNumber(tokenData.marketCap) : 'Loading...'}
+                </div>
+            </div>
+
+            <div className="info-row">
+                <div className="info-label">Circulating Supply</div>
+                <div className="info-value">
+                    {tokenData.circulatingSupply ? formatNumber(tokenData.circulatingSupply) : 'Loading...'}
+                </div>
+            </div>
+
+            <div className="info-row">
+                <div className="info-label">Liquidity</div>
+                <div className="info-value">
+                    ${tokenData.liquidity ? formatNumber(tokenData.liquidity) : 'Loading...'}
+                </div>
+            </div>
+            
+            {error && <div className="error-message">{error}</div>}
         </div>
     );
 };
