@@ -44,6 +44,19 @@ const TokenInfo: React.FC = () => {
                 const tokenAddress = '0x43C3EBaFdF32909aC60E80ee34aE46637E743d65';
                 const contract = new web3.eth.Contract(contractAbi as any, tokenAddress);
                 
+                // Get total transactions
+                const totalTx = await contract.methods.totalTx().call();
+                console.log('Total transactions:', totalTx);
+
+                // Loop through transactions and get candlestick data
+                for(let i = 0; i < totalTx && i < 10; i++) {
+                    const timestamp = await contract.methods.txTimeStamp(i).call();
+                    console.log('Transaction timestamp', i, ':', timestamp);
+                    
+                    const candleData = await contract.methods.candleStickData(timestamp).call();
+                    console.log('CandleStick Data for timestamp', timestamp, ':', candleData);
+                }
+
                 const [name, price, marketCap, circulatingSupply, liquidity] = await Promise.all([
                     contract.methods.name().call(),
                     contract.methods.getSRGPrice().call(),
