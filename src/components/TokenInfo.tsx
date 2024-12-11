@@ -37,6 +37,15 @@ const TokenInfo: React.FC = () => {
         return web3.utils.fromWei(priceInWei, 'ether');
     };
 
+    const formatCandlePrice = (price: string): string => {
+        const num = parseFloat(price) / (10 ** 45);
+        return num.toString();
+    };
+
+    const formatTimestamp = (timestamp: string): string => {
+        return new Date(Number(timestamp) * 1000).toLocaleString('en-US');
+    };
+
     useEffect(() => {
         const fetchTokenData = async () => {
             try {
@@ -51,10 +60,17 @@ const TokenInfo: React.FC = () => {
                 // Loop through transactions and get candlestick data
                 for(let i = 0; i < totalTx && i < 10; i++) {
                     const timestamp = await contract.methods.txTimeStamp(i).call();
-                    console.log('Transaction timestamp', i, ':', timestamp);
+                    console.log('Transaction timestamp', i, ':', formatTimestamp(timestamp));
                     
                     const candleData = await contract.methods.candleStickData(timestamp).call();
-                    console.log('CandleStick Data for timestamp', timestamp, ':', candleData);
+                    const formattedCandleData = {
+                        time: formatTimestamp(candleData.time),
+                        open: formatCandlePrice(candleData.open),
+                        high: formatCandlePrice(candleData.high),
+                        low: formatCandlePrice(candleData.low),
+                        close: formatCandlePrice(candleData.close)
+                    };
+                    console.log('CandleStick Data for timestamp', formatTimestamp(timestamp), ':', formattedCandleData);
                 }
 
                 const [name, price, marketCap, circulatingSupply, liquidity] = await Promise.all([
