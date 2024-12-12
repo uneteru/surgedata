@@ -3,9 +3,11 @@ import Web3 from 'web3';
 import contractAbi from '../ContractAbi.json';
 import PriceChart from './PriceChart.tsx';
 
+const RPC_URL = 'https://bsc-dataseed4.ninicoin.io';
 const pancakeSwapContract = "0x10ED43C718714eb63d5aA57B78B54704E256024E";
 const BNBTokenAddress = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
 const USDTokenAddress = "0x55d398326f99059fF775485246999027B3197955";
+const SRGTokenAddress = "0x9f19c8e321bd14345b797d43e01f0eed030f5bff";
 
 const pancakeSwapAbi = [
     {
@@ -42,7 +44,9 @@ const TokenInfo: React.FC = () => {
         liquidity: ''
     });
     const [bnbPrice, setBnbPrice] = useState<string>('0');
+    const [srgPrice, setSrgPrice] = useState<string>('0');
     const [isBnbLoading, setIsBnbLoading] = useState<boolean>(true);
+    const [isSrgLoading, setIsSrgLoading] = useState<boolean>(true);
     const [priceHistory, setPriceHistory] = useState<Array<PriceHistoryData>>([]);
     const [error, setError] = useState<string>('');
     const [contractAddress, setContractAddress] = useState<string>('0x43C3EBaFdF32909aC60E80ee34aE46637E743d65');
@@ -62,7 +66,7 @@ const TokenInfo: React.FC = () => {
     };
 
     const formatPrice = (priceInWei: string): string => {
-        const web3 = new Web3('https://bsc-dataseed4.ninicoin.io');
+        const web3 = new Web3(RPC_URL);
         return web3.utils.fromWei(priceInWei, 'ether');
     };
 
@@ -75,11 +79,87 @@ const TokenInfo: React.FC = () => {
         return new Date(Number(timestamp) * 1000).toLocaleString('en-US');
     };
 
+    const setDecimals = (number: number, decimals: number) => {
+        console.log(`Setting decimals for number: ${number} with decimals: ${decimals}`);
+        const numberStr = number.toString();
+        const numberAbs = numberStr.split('.')[0];
+        let numberDecimals = numberStr.split('.')[1] || '';
+        while (numberDecimals.length < decimals) {
+            numberDecimals += '0';
+        }
+        const finalNumber = numberAbs + numberDecimals;
+        console.log(`Number after setting decimals: ${finalNumber}`);
+        return finalNumber;
+    };
+
+    const calcSell = async (tokensToSell: number, tokenAddress: string) => {
+        console.log(`Calculating token price for address: ${tokenAddress} with tokens to sell: ${tokensToSell}`);
+        const web3 = new Web3(RPC_URL);
+        const tokenRouter = new web3.eth.Contract(contractAbi as any, tokenAddress);
+        const tokenDecimals = await tokenRouter.methods.decimals().call();
+        console.log(`Fetched token decimals: ${tokenDecimals}`);
+        tokensToSell = setDecimals(tokensToSell, tokenDecimals);
+
+        try {
+            const router = new web3.eth.Contract(pancakeSwapAbi, pancakeSwapContract);
+            console.log(`Calling PancakeSwap getAmountsOut for token to BNB price`);
+            const amountOut = await router.methods
+                .getAmountsOut(tokensToSell.toString(), [tokenAddress, BNBTokenAddress])
+                .call();
+            console.log(`Received amountOut: ${amountOut}`);
+            return web3.utils.fromWei(amountOut[1], 'ether');
+        } catch (error) {
+            console.error("Error in calcSell:", error);
+            return 0;
+        }
+    };
+
+    const calcBNBPrice = async () => {
+        const bnbToSell = Web3.utils.toWei("1", "ether");
+        
+        try {
+            setIsBnbLoading(true);
+            const web3 = new Web3(RPC_URL);
+            const router = new web3.eth.Contract(pancakeSwapAbi, pancakeSwapContract);
+            const amountOut = await router.methods
+                .getAmountsOut(bnbToSell, [BNBTokenAddress, USDTokenAddress])
+                .call();
+            setBnbPrice(Web3.utils.fromWei(amountOut[1], 'ether'));
+        } catch (error) {
+            console.error("Error in calcBNBPrice:", error);
+            setBnbPrice('0');
+        } finally {
+            setIsBnbLoading(false);
+        }
+    };
+
+    const calcSRGPrice = async () => {
+        try {
+            setIsSrgLoading(true);
+            const bnbPriceValue = await calcBNBPrice();
+            console.log(`BNB Price in USD: ${bnbPriceValue}`);
+            
+            const tokensToSell = 1;
+            const priceInBnb = await calcSell(tokensToSell, SRGTokenAddress);
+            console.log(`Token price in BNB: ${priceInBnb}`);
+            
+            const priceInUSD = (priceInBnb * bnbPrice).toFixed(8);
+            console.log(`Token price in USD: ${priceInUSD}`);
+            setSrgPrice(priceInUSD);
+        } catch (error) {
+            console.error("Error calculating SRG price:", error);
+            setSrgPrice('0');
+        } finally {
+            setIsSrgLoading(false);
+        }
+    };
+
     const fetchTokenData = async () => {
         setIsLoading(true);
         setError('');
+
         try {
-            const web3 = new Web3('https://bsc-dataseed4.ninicoin.io');
+            const web3 = new Web3(RPC_URL);
             const contract = new web3.eth.Contract(contractAbi as any, contractAddress);
             
             // Get total transactions
@@ -124,28 +204,13 @@ const TokenInfo: React.FC = () => {
         }
     };
 
-    const calcBNBPrice = async () => {
-        const bnbToSell = Web3.utils.toWei("1", "ether");
-        
-        try {
-            setIsBnbLoading(true);
-            const web3 = new Web3('https://bsc-dataseed4.ninicoin.io');
-            const router = new web3.eth.Contract(pancakeSwapAbi, pancakeSwapContract);
-            const amountOut = await router.methods
-                .getAmountsOut(bnbToSell, [BNBTokenAddress, USDTokenAddress])
-                .call();
-            setBnbPrice(Web3.utils.fromWei(amountOut[1], 'ether'));
-        } catch (error) {
-            console.error("Error in calcBNBPrice:", error);
-            setBnbPrice('0');
-        } finally {
-            setIsBnbLoading(false);
-        }
-    };
-
     useEffect(() => {
-        calcBNBPrice();
-        const interval = setInterval(calcBNBPrice, 30000); // Update every 30 seconds
+        const fetchPrices = async () => {
+            await Promise.all([calcBNBPrice(), calcSRGPrice()]);
+        };
+        
+        fetchPrices();
+        const interval = setInterval(fetchPrices, 30000); // Update every 30 seconds
         return () => clearInterval(interval);
     }, []);
 
@@ -216,6 +281,19 @@ const TokenInfo: React.FC = () => {
                     <>
                         <span>BNB/USD:</span>
                         <span className="bnb-price-value">${Number(bnbPrice).toFixed(2)}</span>
+                    </>
+                )}
+            </div>
+            <div className="bnb-price-container" style={{ left: '200px' }}>
+                {isSrgLoading ? (
+                    <>
+                        <div className="bnb-price-loading"></div>
+                        <span>Loading SRG Price...</span>
+                    </>
+                ) : (
+                    <>
+                        <span>SRG/USD:</span>
+                        <span className="bnb-price-value">${Number(srgPrice).toFixed(8)}</span>
                     </>
                 )}
             </div>
