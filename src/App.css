@@ -449,3 +449,39 @@
   border-radius: 4px;
   padding: 10px;
 }
+
+.bnb-price-container {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px 15px;
+  border-radius: 5px;
+  border: 1px solid #00ff00;
+  color: #00ff00;
+  font-family: 'Courier New', monospace;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bnb-price-loading {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(0, 255, 0, 0.3);
+  border-radius: 50%;
+  border-top-color: #00ff00;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.bnb-price-value {
+  font-weight: bold;
+  text-shadow: 0 0 5px #00ff00;
+}
