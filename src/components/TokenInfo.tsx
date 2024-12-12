@@ -10,7 +10,7 @@ interface TokenData {
     liquidity: string;
 }
 
-interface ClosingPrice {
+interface PriceHistoryData {
     date: string;
     price: number;
 }
@@ -23,7 +23,7 @@ const TokenInfo: React.FC = () => {
         circulatingSupply: '',
         liquidity: ''
     });
-    const [priceHistory, setPriceHistory] = useState<Array<ClosingPrice>>([]);
+    const [priceHistory, setPriceHistory] = useState<Array<PriceHistoryData>>([]);
     const [error, setError] = useState<string>('');
     const [contractAddress, setContractAddress] = useState<string>('0x43C3EBaFdF32909aC60E80ee34aE46637E743d65');
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -71,13 +71,6 @@ const TokenInfo: React.FC = () => {
             for(let i = 0; i < totalTx && i < 10; i++) {
                 const timestamp = await contract.methods.txTimeStamp(i).call();
                 const candleData = await contract.methods.candleStickData(timestamp).call();
-                const formattedCandleData = {
-                    time: formatTimestamp(candleData.time),
-                    open: formatCandlePrice(candleData.open),
-                    high: formatCandlePrice(candleData.high),
-                    low: formatCandlePrice(candleData.low),
-                    close: formatCandlePrice(candleData.close)
-                };
                 
                 newPriceHistory.push({
                     date: formatTimestamp(candleData.time),
