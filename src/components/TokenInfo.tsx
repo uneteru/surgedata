@@ -136,7 +136,14 @@ const TokenInfo: React.FC = () => {
                 </div>
             )}
 
-            {dataFetched && (
+            {isLoading && (
+                <div className="loading-spinner">
+                    <div className="spinner"></div>
+                    <p>Fetching token data...</p>
+                </div>
+            )}
+
+            {!isLoading && dataFetched && (
                 <div className="token-details matrix-data">
                     <h2 className="glow">{tokenData.name}</h2>
                     <div className="data-row">

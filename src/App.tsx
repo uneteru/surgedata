@@ -4,9 +4,10 @@ import TokenInfo from './components/TokenInfo.tsx';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1 className="blockchain-heading">Blockchain Token Info</h1>
+    <div className="matrix-theme">
+      <div className="matrix-background"></div>
+      <header className="matrix-header">
+        <h1 className="matrix-title">SRG20 Token Analytics</h1>
         <TokenInfo />
       </header>
     </div>
