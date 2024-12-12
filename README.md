@@ -1,46 +1,87 @@
-# Getting Started with Create React App
+# Surge Token Interface
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern, Matrix-themed interface for tracking and analyzing Surge tokens on the Binance Smart Chain (BSC). This application provides real-time price tracking, token metrics, and interactive visualizations for SRG20 tokens.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **Real-time Price Tracking**
+  - Live BNB/USD price updates
+  - SRG token price in USD
+  - Automatic price refreshing every 30 seconds
 
-### `npm start`
+- **Token Analytics**
+  - Market Cap
+  - Circulating Supply
+  - Liquidity Information
+  - Transaction History
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- **Interactive Price Chart**
+  - Historical price visualization
+  - Transaction-based price data
+  - Matrix-themed styling
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- **Matrix-Inspired Design**
+  - Animated digital rain background
+  - Green-on-black color scheme
+  - Sleek, modern UI elements
+  - Responsive layout
 
-### `npm test`
+## Technology Stack
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- React with TypeScript
+- Web3.js for blockchain interaction
+- Chart.js for data visualization
+- PancakeSwap integration for price feeds
 
-### `npm run build`
+## Smart Contract Integration
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+The interface connects to:
+- PancakeSwap Router: `0x10ED43C718714eb63d5aA57B78B54704E256024E`
+- BNB Token: `0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c`
+- USDT Token: `0x55d398326f99059fF775485246999027B3197955`
+- SRG Token: `0x9f19c8e321bd14345b797d43e01f0eed030f5bff`
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Getting Started
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/my-surge.git
+```
 
-### `npm run eject`
+2. Install dependencies:
+```bash
+cd my-surge
+npm install
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+3. Start the development server:
+```bash
+npm start
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## Usage
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+1. The interface automatically fetches and displays current BNB and SRG prices
+2. Enter a token contract address to view detailed token information
+3. View historical price data in the interactive chart
+4. All prices auto-refresh every 30 seconds
 
-## Learn More
+## Contributing
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- Matrix digital rain animation inspired by the Matrix film series
+- Price feed data provided by PancakeSwap
+- Built with love by the Surge community
+
+## Contact
+
+For questions and support, please open an issue in the GitHub repository.
