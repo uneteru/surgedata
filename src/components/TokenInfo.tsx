@@ -142,7 +142,7 @@ const TokenInfo: React.FC = () => {
                     <h2 className="glow">{tokenData.name}</h2>
                     <div className="data-row">
                         <span className="label">Price:</span>
-                        <span className="value">{tokenData.price} BNB</span>
+                        <span className="value">{tokenData.price} SRG</span>
                     </div>
                     <div className="data-row">
                         <span className="label">Market Cap:</span>

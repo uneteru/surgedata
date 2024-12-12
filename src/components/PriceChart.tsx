@@ -97,7 +97,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ priceHistory }) => {
     labels: priceHistory.map(item => new Date(item.date).toLocaleDateString()),
     datasets: [
       {
-        label: 'Price (BNB)',
+        label: 'Price (SRG)',
         data: priceHistory.map(item => item.price),
         borderColor: '#00ff00',
         backgroundColor: 'rgba(0, 255, 0, 0.5)',
