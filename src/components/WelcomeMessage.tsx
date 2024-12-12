@@ -5,7 +5,7 @@ const WelcomeMessage: React.FC = () => {
     const [showCursor, setShowCursor] = useState(true);
     const [isTypingComplete, setIsTypingComplete] = useState(false);
     const agentNumber = Math.floor(Math.random() * 9000) + 1000; // Random 4-digit number
-    const fullMessage = `> SYSTEM ACCESS GRANTED\n> Mobula.io Technical Test\n> Agent Uneteru ${agentNumber} authenticated\n> Welcome to SRG20 Blockchain Interface\n> Sacha, Please proceed with caution`;
+    const fullMessage = `> SYSTEM ACCESS GRANTED\n> Mobula.io Technical Test\n> Agent Une Teru ${agentNumber} authenticated\n> Welcome to SRG20 Blockchain Interface\n> Sacha, Please proceed with caution`;
     
     useEffect(() => {
         let currentIndex = 0;

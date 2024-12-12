@@ -428,3 +428,24 @@
     transform: translateY(0);
   }
 }
+
+.chart-container {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 255, 0, 0.2);
+  height: 400px;
+  width: 100%;
+}
+
+.price-chart {
+  height: 100%;
+  width: 100%;
+}
+
+.price-chart canvas {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+  padding: 10px;
+}

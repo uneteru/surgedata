@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Web3 from 'web3';
 import contractAbi from '../ContractAbi.json';
+import PriceChart from './PriceChart.tsx';
 
 interface TokenData {
     name: string;
@@ -154,6 +155,9 @@ const TokenInfo: React.FC = () => {
                     <div className="data-row">
                         <span className="label">Liquidity:</span>
                         <span className="value">${tokenData.liquidity}</span>
+                    </div>
+                    <div className="chart-container">
+                        <PriceChart priceHistory={priceHistory} />
                     </div>
                 </div>
             )}
