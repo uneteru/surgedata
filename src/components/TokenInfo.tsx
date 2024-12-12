@@ -66,8 +66,16 @@ const TokenInfo: React.FC = () => {
     const [contractAddress, setContractAddress] = useState<string>('0x43C3EBaFdF32909aC60E80ee34aE46637E743d65');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [dataFetched, setDataFetched] = useState<boolean>(false);
+    const [progress, setProgress] = useState<string>('');
 
-    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+    const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+    const clearCache = () => {
+        localStorage.removeItem(`token_data_${contractAddress}`);
+        setDataFetched(false);
+        // Refetch data after clearing cache
+        fetchTokenData();
+    };
 
     const formatNumber = (value: string): string => {
         const num = parseFloat(value);
@@ -84,20 +92,6 @@ const TokenInfo: React.FC = () => {
     const formatPrice = (priceInWei: string): string => {
         const web3 = new Web3(RPC_URL);
         return web3.utils.fromWei(priceInWei, 'ether');
-    };
-
-    const formatCandlePrice = (price: string): string => {
-        const num = parseFloat(price) / (10 ** 45);
-        return num.toString();
-    };
-
-    const formatVolumePrice = (price: string): string => {
-        const num = parseFloat(price) / (10 ** 40);
-        return num.toString();
-    };
-
-    const formatTimestamp = (timestamp: string): string => {
-        return new Date(Number(timestamp) * 1000).toLocaleString('en-US');
     };
 
     const setDecimals = (number: number, decimals: number) => {
@@ -184,7 +178,7 @@ const TokenInfo: React.FC = () => {
         const data = JSON.parse(cached);
         const now = Date.now();
         
-        // Check if cache is expired (5 minutes)
+        // Check if cache is expired (24 hours)
         if (now - data.timestamp > CACHE_DURATION) {
             localStorage.removeItem(`token_data_${address}`);
             return null;
@@ -206,6 +200,7 @@ const TokenInfo: React.FC = () => {
     const fetchTokenData = async () => {
         setIsLoading(true);
         setError('');
+        setProgress('');
 
         try {
             // Check cache first
@@ -230,28 +225,42 @@ const TokenInfo: React.FC = () => {
             const newVolumeHistory = [];
             for(let i = 1; i <= totalTx; i++) {
                 //if(i == 10) break;
+                setProgress(`${i} / ${totalTx}`);
                 console.log(i);
                 const timestamp = await contract.methods.txTimeStamp(i).call();
                 const candleData = await contract.methods.candleStickData(timestamp).call();
                 const txVolume = await contract.methods.tVol(timestamp).call();
+                const tnDate = new Date(Number(timestamp) * 1000).toLocaleString('en-US');
+                const volDate = new Date(Number(timestamp) * 1000).toLocaleDateString('en-US');
+                const existingEntry = newVolumeHistory.find(entry => entry.date === volDate);
+                const closePrice = Number(candleData.close) / (10 ** 45)
                 
+                if (existingEntry) {
+                    // Add to existing volume for this day
+                    existingEntry.volume += Number(txVolume);
+                } else {
+                    // Create new entry for this day
+                    newVolumeHistory.push({
+                        date: volDate,
+                        volume: Number(txVolume),
+                    });
+                }
+
                 newPriceHistory.push({
-                    date: formatTimestamp(candleData.time),
-                    price: parseFloat(formatCandlePrice(candleData.close)),
-                });
-                
-                newVolumeHistory.push({
-                    date: formatTimestamp(candleData.time),
-                    volume: parseFloat(formatVolumePrice(txVolume)),
+                    date: tnDate,
+                    price: closePrice,
                 });
             }
-            console.log(newPriceHistory);
             
-            setPriceHistory(newPriceHistory.reverse());
-            setVolumeHistory(newVolumeHistory.reverse());
+            setPriceHistory(newPriceHistory);
+            setVolumeHistory(newVolumeHistory);
 
-            const [name, price, marketCap, circulatingSupply, liquidity] = await Promise.all([
+            console.log(newPriceHistory);
+            console.log(newVolumeHistory);
+
+            const [name, symbol, price, marketCap, circulatingSupply, liquidity] = await Promise.all([
                 contract.methods.name().call(),
+                contract.methods.symbol().call(),
                 contract.methods.getSRGPrice().call(),
                 contract.methods.getMarketCap().call(),
                 contract.methods.getCirculatingSupply().call(),
@@ -299,7 +308,15 @@ const TokenInfo: React.FC = () => {
                     disabled={isLoading || !contractAddress}
                     className="matrix-button"
                 >
-                    {isLoading ? 'Loading...' : 'Fetch Data'}
+                    {isLoading ? `Loading... ${progress}` : 'Fetch Data'}
+                </button>
+                <button
+                    onClick={clearCache}
+                    disabled={isLoading || !contractAddress || !dataFetched}
+                    className="matrix-button"
+                    style={{ marginLeft: '10px' }}
+                >
+                    Clear Cache
                 </button>
             </div>
 
@@ -318,7 +335,7 @@ const TokenInfo: React.FC = () => {
 
             {!isLoading && dataFetched && (
                 <div className="token-details matrix-data">
-                    <h2 className="glow">{tokenData.name}</h2>
+                    <h2 className="glow">{tokenData.name} {tokenData.symbol}</h2>
                     <div className="data-row">
                         <span className="label">Price:</span>
                         <span className="value">{tokenData.price} SRG</span>
