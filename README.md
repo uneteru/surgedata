@@ -45,7 +45,7 @@ The interface connects to:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/my-surge.git
+git clone https://github.com/uneteru/surgedata.git
 ```
 
 2. Install dependencies:
