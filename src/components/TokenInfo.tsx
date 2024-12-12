@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Web3 from 'web3';
 import contractAbi from '../ContractAbi.json';
 import PriceChart from './PriceChart.tsx';
+import VolumeChart from './VolumeChart.tsx';
 
 const RPC_URL = 'https://bsc-dataseed4.ninicoin.io';
 const pancakeSwapContract = "0x10ED43C718714eb63d5aA57B78B54704E256024E";
@@ -35,6 +36,18 @@ interface PriceHistoryData {
     price: number;
 }
 
+interface VolumeHistoryData {
+    date: string;
+    volume: number;
+}
+
+interface CacheData {
+    timestamp: number;
+    priceHistory: PriceHistoryData[];
+    volumeHistory: VolumeHistoryData[];
+    tokenData: TokenData;
+}
+
 const TokenInfo: React.FC = () => {
     const [tokenData, setTokenData] = useState<TokenData>({
         name: '',
@@ -47,11 +60,14 @@ const TokenInfo: React.FC = () => {
     const [srgPrice, setSrgPrice] = useState<string>('0');
     const [isBnbLoading, setIsBnbLoading] = useState<boolean>(true);
     const [isSrgLoading, setIsSrgLoading] = useState<boolean>(true);
-    const [priceHistory, setPriceHistory] = useState<Array<PriceHistoryData>>([]);
+    const [priceHistory, setPriceHistory] = useState<PriceHistoryData[]>([]);
+    const [volumeHistory, setVolumeHistory] = useState<VolumeHistoryData[]>([]);
     const [error, setError] = useState<string>('');
     const [contractAddress, setContractAddress] = useState<string>('0x43C3EBaFdF32909aC60E80ee34aE46637E743d65');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [dataFetched, setDataFetched] = useState<boolean>(false);
+
+    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
     const formatNumber = (value: string): string => {
         const num = parseFloat(value);
@@ -72,6 +88,11 @@ const TokenInfo: React.FC = () => {
 
     const formatCandlePrice = (price: string): string => {
         const num = parseFloat(price) / (10 ** 45);
+        return num.toString();
+    };
+
+    const formatVolumePrice = (price: string): string => {
+        const num = parseFloat(price) / (10 ** 40);
         return num.toString();
     };
 
@@ -156,11 +177,48 @@ const TokenInfo: React.FC = () => {
         }
     };
 
+    const getCachedData = (address: string): CacheData | null => {
+        const cached = localStorage.getItem(`token_data_${address}`);
+        if (!cached) return null;
+        
+        const data = JSON.parse(cached);
+        const now = Date.now();
+        
+        // Check if cache is expired (5 minutes)
+        if (now - data.timestamp > CACHE_DURATION) {
+            localStorage.removeItem(`token_data_${address}`);
+            return null;
+        }
+        
+        return data;
+    };
+
+    const setCachedData = (address: string, priceHistory: PriceHistoryData[], volumeHistory: VolumeHistoryData[], tokenData: TokenData) => {
+        const cacheData: CacheData = {
+            timestamp: Date.now(),
+            priceHistory,
+            volumeHistory,
+            tokenData
+        };
+        localStorage.setItem(`token_data_${address}`, JSON.stringify(cacheData));
+    };
+
     const fetchTokenData = async () => {
         setIsLoading(true);
         setError('');
 
         try {
+            // Check cache first
+            const cachedData = getCachedData(contractAddress);
+            if (cachedData) {
+                setPriceHistory(cachedData.priceHistory);
+                setVolumeHistory(cachedData.volumeHistory);
+                setTokenData(cachedData.tokenData);
+                setDataFetched(true);
+                setIsLoading(false);
+                return;
+            }
+
             const web3 = new Web3(RPC_URL);
             const contract = new web3.eth.Contract(contractAbi as any, contractAddress);
             
@@ -169,17 +227,28 @@ const TokenInfo: React.FC = () => {
 
             // Loop through transactions and get candlestick data
             const newPriceHistory = [];
-            for(let i = 0; i < totalTx && i < 10; i++) {
+            const newVolumeHistory = [];
+            for(let i = 1; i <= totalTx; i++) {
+                //if(i == 10) break;
+                console.log(i);
                 const timestamp = await contract.methods.txTimeStamp(i).call();
                 const candleData = await contract.methods.candleStickData(timestamp).call();
+                const txVolume = await contract.methods.tVol(timestamp).call();
                 
                 newPriceHistory.push({
                     date: formatTimestamp(candleData.time),
-                    price: parseFloat(formatCandlePrice(candleData.close))
+                    price: parseFloat(formatCandlePrice(candleData.close)),
+                });
+                
+                newVolumeHistory.push({
+                    date: formatTimestamp(candleData.time),
+                    volume: parseFloat(formatVolumePrice(txVolume)),
                 });
             }
+            console.log(newPriceHistory);
             
-            setPriceHistory(newPriceHistory);
+            setPriceHistory(newPriceHistory.reverse());
+            setVolumeHistory(newVolumeHistory.reverse());
 
             const [name, price, marketCap, circulatingSupply, liquidity] = await Promise.all([
                 contract.methods.name().call(),
@@ -189,14 +258,19 @@ const TokenInfo: React.FC = () => {
                 contract.methods.getLiquidity().call()
             ]);
 
-            setTokenData({
+            const newTokenData = {
                 name,
                 price: formatPrice(price),
                 marketCap: formatNumber(marketCap),
                 circulatingSupply: formatNumber(circulatingSupply),
                 liquidity: formatNumber(liquidity)
-            });
+            };
+
+            setTokenData(newTokenData);
             setDataFetched(true);
+
+            // Cache the fetched data
+            setCachedData(contractAddress, newPriceHistory, newVolumeHistory, newTokenData);
         } catch (err: any) {
             setError(err.message || 'An error occurred while fetching token data');
         } finally {
@@ -263,6 +337,7 @@ const TokenInfo: React.FC = () => {
                     </div>
                     <div className="chart-container">
                         <PriceChart priceHistory={priceHistory} />
+                        <VolumeChart volumeHistory={volumeHistory} />
                     </div>
                 </div>
             )}
