@@ -117,12 +117,13 @@
 }
 
 .matrix-theme {
-  background-color: #000;
   min-height: 100vh;
-  color: #00ff00;
-  font-family: 'Courier New', monospace;
   position: relative;
-  overflow: hidden;
+  color: #00ff00;
+}
+
+.matrix-canvas {
+  pointer-events: none;
 }
 
 .matrix-background {
@@ -144,32 +145,33 @@
 .matrix-header {
   position: relative;
   z-index: 2;
-  padding: 2rem;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
   width: 100%;
   max-width: 800px;
+  margin: 0 auto;
 }
 
 .matrix-title {
   font-size: 2.5rem;
   font-weight: 700;
   color: #00ff00;
-  text-shadow: 0 0 10px #00ff00;
+  text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
   margin-bottom: 2rem;
-  letter-spacing: 2px;
+  letter-spacing: 4px;
   text-transform: uppercase;
   animation: glow 2s ease-in-out infinite;
+  font-family: 'Courier New', monospace;
 }
 
 .matrix-input {
+  flex: 1;
+  max-width: 400px;
   background-color: rgba(0, 0, 0, 0.7);
   border: 1px solid #00ff00;
   color: #00ff00;
   padding: 0.8rem;
-  width: 400px;
   font-family: 'Courier New', monospace;
   border-radius: 4px;
   box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
@@ -214,6 +216,8 @@
   display: flex;
   gap: 1rem;
   justify-content: center;
+  width: 100%;
+  max-width: 600px;
 }
 
 .error-message {
@@ -225,13 +229,14 @@
 }
 
 .token-details {
+  margin-top: 2rem;
   background: rgba(0, 0, 0, 0.7);
   border: 1px solid #00ff00;
   border-radius: 8px;
   padding: 2rem;
-  margin: 2rem auto;
-  box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+  width: 100%;
   max-width: 600px;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
 }
 
 .data-row {
@@ -319,29 +324,33 @@
 
 .welcome-message {
   position: fixed;
-  top: 1.5rem;
-  left: 1.5rem;
-  color: #00ff00;
-  font-family: 'Courier New', monospace;
-  font-size: 0.9rem;
-  z-index: 3;
-  text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+  width: 420px;
+  height: 150px;
   background: rgba(0, 0, 0, 0.7);
-  padding: 1rem;
-  border-radius: 4px;
+  padding: 15px;
+  border-radius: 5px;
+  font-family: 'Courier New', monospace;
   border: 1px solid rgba(0, 255, 0, 0.3);
-  box-shadow: 0 0 10px rgba(0, 255, 0, 0.1);
 }
 
 .welcome-message pre {
   margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #00ff00;
   white-space: pre-wrap;
-  font-family: 'Courier New', monospace;
+  display: inline;
 }
 
 .cursor {
+  color: #00ff00;
+  font-weight: bold;
   opacity: 0;
-  margin-left: 2px;
+  display: inline-block;
+  margin-left: 0;
 }
 
 .cursor.visible {
@@ -352,17 +361,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 100vh;
   width: 100%;
-  padding: 2rem;
-  position: relative;
-  z-index: 2;
+  padding: 40px;
+  padding-left: 480px;
+  box-sizing: border-box;
 }
 
 .system-messages {
   position: fixed;
-  top: 5rem;
+  top: 12rem;
   left: 1.5rem;
   max-width: 400px;
   color: #00ff00;
