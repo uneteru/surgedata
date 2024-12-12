@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Web3 from 'web3';
 import contractAbi from '../ContractAbi.json';
 
@@ -10,6 +10,11 @@ interface TokenData {
     liquidity: string;
 }
 
+interface ClosingPrice {
+    date: string;
+    price: number;
+}
+
 const TokenInfo: React.FC = () => {
     const [tokenData, setTokenData] = useState<TokenData>({
         name: '',
@@ -18,7 +23,11 @@ const TokenInfo: React.FC = () => {
         circulatingSupply: '',
         liquidity: ''
     });
+    const [priceHistory, setPriceHistory] = useState<Array<ClosingPrice>>([]);
     const [error, setError] = useState<string>('');
+    const [contractAddress, setContractAddress] = useState<string>('0x43C3EBaFdF32909aC60E80ee34aE46637E743d65');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [dataFetched, setDataFetched] = useState<boolean>(false);
 
     const formatNumber = (value: string): string => {
         const num = parseFloat(value);
@@ -46,94 +55,109 @@ const TokenInfo: React.FC = () => {
         return new Date(Number(timestamp) * 1000).toLocaleString('en-US');
     };
 
-    useEffect(() => {
-        const fetchTokenData = async () => {
-            try {
-                const web3 = new Web3('https://bsc-dataseed4.ninicoin.io');
-                const tokenAddress = '0x43C3EBaFdF32909aC60E80ee34aE46637E743d65';
-                const contract = new web3.eth.Contract(contractAbi as any, tokenAddress);
+    const fetchTokenData = async () => {
+        setIsLoading(true);
+        setError('');
+        try {
+            const web3 = new Web3('https://bsc-dataseed4.ninicoin.io');
+            const contract = new web3.eth.Contract(contractAbi as any, contractAddress);
+            
+            // Get total transactions
+            const totalTx = await contract.methods.totalTx().call();
+            console.log('Total transactions:', totalTx);
+
+            // Loop through transactions and get candlestick data
+            const newPriceHistory = [];
+            for(let i = 0; i < totalTx && i < 10; i++) {
+                const timestamp = await contract.methods.txTimeStamp(i).call();
+                const candleData = await contract.methods.candleStickData(timestamp).call();
+                const formattedCandleData = {
+                    time: formatTimestamp(candleData.time),
+                    open: formatCandlePrice(candleData.open),
+                    high: formatCandlePrice(candleData.high),
+                    low: formatCandlePrice(candleData.low),
+                    close: formatCandlePrice(candleData.close)
+                };
                 
-                // Get total transactions
-                const totalTx = await contract.methods.totalTx().call();
-                console.log('Total transactions:', totalTx);
-
-                // Loop through transactions and get candlestick data
-                for(let i = 0; i < totalTx && i < 10; i++) {
-                    const timestamp = await contract.methods.txTimeStamp(i).call();
-                    console.log('Transaction timestamp', i, ':', formatTimestamp(timestamp));
-                    
-                    const candleData = await contract.methods.candleStickData(timestamp).call();
-                    const formattedCandleData = {
-                        time: formatTimestamp(candleData.time),
-                        open: formatCandlePrice(candleData.open),
-                        high: formatCandlePrice(candleData.high),
-                        low: formatCandlePrice(candleData.low),
-                        close: formatCandlePrice(candleData.close)
-                    };
-                    console.log('CandleStick Data for timestamp', formatTimestamp(timestamp), ':', formattedCandleData);
-                }
-
-                const [name, price, marketCap, circulatingSupply, liquidity] = await Promise.all([
-                    contract.methods.name().call(),
-                    contract.methods.getSRGPrice().call(),
-                    contract.methods.getMarketCap().call(),
-                    contract.methods.getCirculatingSupply().call(),
-                    contract.methods.getLiquidity().call()
-                ]);
-
-                setTokenData({
-                    name,
-                    price: formatPrice(price),
-                    marketCap: formatPrice(marketCap),
-                    circulatingSupply,
-                    liquidity
+                newPriceHistory.push({
+                    date: formatTimestamp(candleData.time),
+                    price: parseFloat(formatCandlePrice(candleData.close))
                 });
-            } catch (err) {
-                setError('Error fetching token data: ' + (err as Error).message);
             }
-        };
+            
+            setPriceHistory(newPriceHistory);
+            console.log('Price History:', newPriceHistory);
 
-        fetchTokenData();
-    }, []);
+            const [name, price, marketCap, circulatingSupply, liquidity] = await Promise.all([
+                contract.methods.name().call(),
+                contract.methods.getSRGPrice().call(),
+                contract.methods.getMarketCap().call(),
+                contract.methods.getCirculatingSupply().call(),
+                contract.methods.getLiquidity().call()
+            ]);
+
+            setTokenData({
+                name,
+                price: formatPrice(price),
+                marketCap: formatNumber(marketCap),
+                circulatingSupply: formatNumber(circulatingSupply),
+                liquidity: formatNumber(liquidity)
+            });
+            setDataFetched(true);
+        } catch (err: any) {
+            setError(err.message || 'An error occurred while fetching token data');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
-        <div className="token-analytics">
-            <h2>Token Analytics</h2>
-            
-            <div className="info-row">
-                <div className="info-label">Name</div>
-                <div className="info-value">{tokenData.name || 'Loading...'}</div>
+        <div className="token-info">
+            <div className="input-section" style={{ marginBottom: '20px' }}>
+                <input
+                    type="text"
+                    value={contractAddress}
+                    onChange={(e) => setContractAddress(e.target.value)}
+                    placeholder="Enter contract address"
+                    style={{
+                        padding: '8px',
+                        marginRight: '10px',
+                        width: '400px',
+                        borderRadius: '4px',
+                        border: '1px solid #ccc'
+                    }}
+                />
+                <button
+                    onClick={fetchTokenData}
+                    disabled={isLoading || !contractAddress}
+                    style={{
+                        padding: '8px 16px',
+                        backgroundColor: '#007bff',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: isLoading ? 'not-allowed' : 'pointer'
+                    }}
+                >
+                    {isLoading ? 'Loading...' : 'Fetch Data'}
+                </button>
             </div>
 
-            <div className="info-row">
-                <div className="info-label">Price</div>
-                <div className="info-value bnb">
-                    {tokenData.price ? formatNumber(tokenData.price) : 'Loading...'}
+            {error && (
+                <div className="error" style={{ color: 'red', marginBottom: '20px' }}>
+                    {error}
                 </div>
-            </div>
+            )}
 
-            <div className="info-row">
-                <div className="info-label">Market Cap</div>
-                <div className="info-value">
-                    ${tokenData.marketCap ? formatNumber(tokenData.marketCap) : 'Loading...'}
+            {dataFetched && (
+                <div className="token-details">
+                    <h2>{tokenData.name}</h2>
+                    <div>Price: {tokenData.price} BNB</div>
+                    <div>Market Cap: ${tokenData.marketCap}</div>
+                    <div>Circulating Supply: {tokenData.circulatingSupply}</div>
+                    <div>Liquidity: ${tokenData.liquidity}</div>
                 </div>
-            </div>
-
-            <div className="info-row">
-                <div className="info-label">Circulating Supply</div>
-                <div className="info-value">
-                    {tokenData.circulatingSupply ? formatNumber(tokenData.circulatingSupply) : 'Loading...'}
-                </div>
-            </div>
-
-            <div className="info-row">
-                <div className="info-label">Liquidity</div>
-                <div className="info-value">
-                    ${tokenData.liquidity ? formatNumber(tokenData.liquidity) : 'Loading...'}
-                </div>
-            </div>
-            
-            {error && <div className="error-message">{error}</div>}
+            )}
         </div>
     );
 };
