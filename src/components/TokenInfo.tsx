@@ -80,7 +80,6 @@ const TokenInfo: React.FC = () => {
     };
 
     const setDecimals = (number: number, decimals: number) => {
-        console.log(`Setting decimals for number: ${number} with decimals: ${decimals}`);
         const numberStr = number.toString();
         const numberAbs = numberStr.split('.')[0];
         let numberDecimals = numberStr.split('.')[1] || '';
@@ -88,25 +87,20 @@ const TokenInfo: React.FC = () => {
             numberDecimals += '0';
         }
         const finalNumber = numberAbs + numberDecimals;
-        console.log(`Number after setting decimals: ${finalNumber}`);
         return finalNumber;
     };
 
     const calcSell = async (tokensToSell: number, tokenAddress: string) => {
-        console.log(`Calculating token price for address: ${tokenAddress} with tokens to sell: ${tokensToSell}`);
         const web3 = new Web3(RPC_URL);
         const tokenRouter = new web3.eth.Contract(contractAbi as any, tokenAddress);
         const tokenDecimals = await tokenRouter.methods.decimals().call();
-        console.log(`Fetched token decimals: ${tokenDecimals}`);
         tokensToSell = setDecimals(tokensToSell, tokenDecimals);
 
         try {
             const router = new web3.eth.Contract(pancakeSwapAbi, pancakeSwapContract);
-            console.log(`Calling PancakeSwap getAmountsOut for token to BNB price`);
             const amountOut = await router.methods
                 .getAmountsOut(tokensToSell.toString(), [tokenAddress, BNBTokenAddress])
                 .call();
-            console.log(`Received amountOut: ${amountOut}`);
             return web3.utils.fromWei(amountOut[1], 'ether');
         } catch (error) {
             console.error("Error in calcSell:", error);
@@ -118,38 +112,46 @@ const TokenInfo: React.FC = () => {
         const bnbToSell = Web3.utils.toWei("1", "ether");
         
         try {
-            setIsBnbLoading(true);
             const web3 = new Web3(RPC_URL);
             const router = new web3.eth.Contract(pancakeSwapAbi, pancakeSwapContract);
             const amountOut = await router.methods
                 .getAmountsOut(bnbToSell, [BNBTokenAddress, USDTokenAddress])
                 .call();
-            setBnbPrice(Web3.utils.fromWei(amountOut[1], 'ether'));
+            return Web3.utils.fromWei(amountOut[1], 'ether');
         } catch (error) {
             console.error("Error in calcBNBPrice:", error);
-            setBnbPrice('0');
-        } finally {
-            setIsBnbLoading(false);
+            return '0';
         }
     };
 
-    const calcSRGPrice = async () => {
+    const calcSRGPrice = async (bnbPrice: string) => {
+        const tokensToSell = 1;
         try {
-            setIsSrgLoading(true);
-            const bnbPriceValue = await calcBNBPrice();
-            console.log(`BNB Price in USD: ${bnbPriceValue}`);
-            
-            const tokensToSell = 1;
             const priceInBnb = await calcSell(tokensToSell, SRGTokenAddress);
-            console.log(`Token price in BNB: ${priceInBnb}`);
-            
-            const priceInUSD = (priceInBnb * bnbPrice).toFixed(8);
-            console.log(`Token price in USD: ${priceInUSD}`);
-            setSrgPrice(priceInUSD);
+            const priceInUSD = (Number(priceInBnb) * Number(bnbPrice)).toFixed(8);
+            return priceInUSD;
         } catch (error) {
             console.error("Error calculating SRG price:", error);
+            return '0';
+        }
+    };
+
+    const fetchPrices = async () => {
+        try {
+            setIsBnbLoading(true);
+            setIsSrgLoading(true);
+            
+            const bnbPriceValue = await calcBNBPrice();
+            setBnbPrice(bnbPriceValue);
+            
+            const srgPriceValue = await calcSRGPrice(bnbPriceValue);
+            setSrgPrice(srgPriceValue);
+        } catch (error) {
+            console.error("Error fetching prices:", error);
+            setBnbPrice('0');
             setSrgPrice('0');
         } finally {
+            setIsBnbLoading(false);
             setIsSrgLoading(false);
         }
     };
@@ -164,7 +166,6 @@ const TokenInfo: React.FC = () => {
             
             // Get total transactions
             const totalTx = await contract.methods.totalTx().call();
-            console.log('Total transactions:', totalTx);
 
             // Loop through transactions and get candlestick data
             const newPriceHistory = [];
@@ -179,7 +180,6 @@ const TokenInfo: React.FC = () => {
             }
             
             setPriceHistory(newPriceHistory);
-            console.log('Price History:', newPriceHistory);
 
             const [name, price, marketCap, circulatingSupply, liquidity] = await Promise.all([
                 contract.methods.name().call(),
@@ -205,10 +205,6 @@ const TokenInfo: React.FC = () => {
     };
 
     useEffect(() => {
-        const fetchPrices = async () => {
-            await Promise.all([calcBNBPrice(), calcSRGPrice()]);
-        };
-        
         fetchPrices();
         const interval = setInterval(fetchPrices, 30000); // Update every 30 seconds
         return () => clearInterval(interval);
