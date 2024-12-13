@@ -80,18 +80,25 @@ const TokenInfo: React.FC = () => {
     const formatNumber = (value: string): string => {
         const num = parseFloat(value);
         if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B';
+            return (num / 1e9).toFixed(0);
         } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M';
+            return (num / 1e6).toFixed(0);
         } else if (num >= 1e3) {
-            return (num / 1e3).toFixed(2) + 'K';
+            return (num / 1e3).toFixed(0);
         }
-        return num.toFixed(2);
+        return num.toFixed(0);
     };
 
-    const formatPrice = (priceInWei: string): string => {
-        const web3 = new Web3(RPC_URL);
-        return web3.utils.fromWei(priceInWei, 'ether');
+    const formatMcap = (value: string): string => {
+        const num = parseFloat(value);
+        if (num >= 1e9) {
+            return (num / 1e9).toFixed(0);
+        } else if (num >= 1e6) {
+            return (num / 1e6).toFixed(0);
+        } else if (num >= 1e3) {
+            return (num / 1e3).toFixed(0);
+        }
+        return num.toFixed(0);
     };
 
     const setDecimals = (number: number, decimals: number) => {
@@ -223,6 +230,7 @@ const TokenInfo: React.FC = () => {
             const totalTx = await contract.methods.totalTx().call();
             const lastTime = await contract.methods.txTimeStamp(totalTx).call();
             const lastCandle = await contract.methods.candleStickData(lastTime).call();
+            const circulatingSupply = await contract.methods.getCirculatingSupply().call();
 
             // Loop through transactions and get candlestick data
             const newPriceHistory = [];
@@ -270,12 +278,13 @@ const TokenInfo: React.FC = () => {
             console.log(newVolumeHistory);
 
             const tokenPrice = Number(lastCandle.close) / (10 ** 45);
+            const tokenMarketCap = tokenPrice * Number(circulatingSupply);
 
-            const [name, symbol, price, marketCap, circulatingSupply, liquidity] = await Promise.all([
+            const [name, symbol, price, marketCap, circulSup, liquidity] = await Promise.all([
                 contract.methods.name().call(),
                 contract.methods.symbol().call(),
                 tokenPrice,
-                contract.methods.getMarketCap().call(),
+                tokenMarketCap,
                 contract.methods.getCirculatingSupply().call(),
                 contract.methods.getLiquidity().call()
             ]);
@@ -284,12 +293,12 @@ const TokenInfo: React.FC = () => {
                 name,
                 symbol: symbol,
                 price: price.toFixed(6),
-                marketCap: formatNumber(marketCap),
                 circulatingSupply: formatNumber(circulatingSupply),
+                marketCap: formatNumber(marketCap),
                 liquidity: formatNumber(liquidity)
             };
 
-            console.log(newTokenData.price)
+            console.log(newTokenData.marketCap)
             setTokenData(newTokenData);
             setDataFetched(true);
 
@@ -357,7 +366,7 @@ const TokenInfo: React.FC = () => {
                     </div>
                     <div className="data-row">
                         <span className="label">Market Cap:</span>
-                        <span className="value">${tokenData.marketCap}</span>
+                        <span className="value">{tokenData.marketCap} SRG</span>
                     </div>
                     <div className="data-row">
                         <span className="label">Circulating Supply:</span>
@@ -365,7 +374,7 @@ const TokenInfo: React.FC = () => {
                     </div>
                     <div className="data-row">
                         <span className="label">Liquidity:</span>
-                        <span className="value">${tokenData.liquidity}</span>
+                        <span className="value">{tokenData.liquidity}</span>
                     </div>
                     <div className="chart-container" style={{ 
                         display: 'flex',
