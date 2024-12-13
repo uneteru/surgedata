@@ -61,6 +61,9 @@ const TokenInfo: React.FC = () => {
     const [isBnbLoading, setIsBnbLoading] = useState<boolean>(true);
     const [isSrgLoading, setIsSrgLoading] = useState<boolean>(true);
     const [priceHistory, setPriceHistory] = useState<PriceHistoryData[]>([]);
+    const [hourlyPrices, setHourlyPrices] = useState<PriceHistoryData[]>([]);
+    const [dailyPrices, setDailyPrices] = useState<PriceHistoryData[]>([]);
+    const [currentView, setCurrentView] = useState<'raw' | 'hourly' | 'daily'>('raw');
     const [volumeHistory, setVolumeHistory] = useState<VolumeHistoryData[]>([]);
     const [error, setError] = useState<string>('');
     const [contractAddress, setContractAddress] = useState<string>('0x43C3EBaFdF32909aC60E80ee34aE46637E743d65');
@@ -239,7 +242,7 @@ const TokenInfo: React.FC = () => {
                             });
                         }
                     }
-                    setPriceHistory(hourlyPrices);
+                    setHourlyPrices(hourlyPrices);
                     console.log('Hourly prices:', hourlyPrices);
 
                     // Daily prices
@@ -256,8 +259,9 @@ const TokenInfo: React.FC = () => {
                         }
                     }
                     console.log('Daily prices:', dailyPrices);
+                    setDailyPrices(dailyPrices);
                 }
-                console.log(cachedData.volumeHistory)   
+                console.log('Volume history:', cachedData.volumeHistory)   
                 return;
             }
 
@@ -308,7 +312,50 @@ const TokenInfo: React.FC = () => {
             // Sort price history by date
             newPriceHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
             
-            setPriceHistory(newPriceHistory);
+            // Calculate hourly and daily prices
+            if (newPriceHistory.length > 0) {
+                const startTime = new Date(newPriceHistory[0].date);
+                const endTime = new Date(); // Current time dynamically
+                const hourlyPrices = [];
+                const dailyPrices = [];
+                
+                // Hourly prices
+                for (let currentTime = new Date(startTime); currentTime <= endTime; currentTime.setHours(currentTime.getHours() + 1)) {
+                    const lastPrice = newPriceHistory.findLast(
+                        entry => new Date(entry.date) <= currentTime
+                    );
+                    
+                    if (lastPrice) {
+                        hourlyPrices.push({
+                            date: currentTime.toISOString(),
+                            price: lastPrice.price
+                        });
+                    }
+                }
+
+                // Daily prices
+                for (let currentTime = new Date(startTime); currentTime <= endTime; currentTime.setDate(currentTime.getDate() + 1)) {
+                    const lastPrice = newPriceHistory.findLast(
+                        entry => new Date(entry.date) <= currentTime
+                    );
+                    
+                    if (lastPrice) {
+                        dailyPrices.push({
+                            date: currentTime.toISOString(),
+                            price: lastPrice.price
+                        });
+                    }
+                }
+
+                console.log('Hourly prices:', hourlyPrices);
+                console.log('Daily prices:', dailyPrices);
+                setPriceHistory(newPriceHistory);
+                setHourlyPrices(hourlyPrices);
+                setDailyPrices(dailyPrices);
+            } else {
+                setPriceHistory(newPriceHistory);
+            }
+            
             setVolumeHistory(newVolumeHistory);
 
             console.log(newPriceHistory);
@@ -421,7 +468,48 @@ const TokenInfo: React.FC = () => {
                         marginTop: '20px'
                     }}>
                         <div style={{ height: '400px', width: '100%' }}>
-                            <PriceChart priceHistory={priceHistory} />
+                            <PriceChart priceHistory={currentView === 'raw' ? priceHistory : currentView === 'hourly' ? hourlyPrices : dailyPrices} />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', margin: '10px 0' }}>
+                            <button 
+                                onClick={() => setCurrentView('raw')}
+                                style={{
+                                    padding: '8px 16px',
+                                    backgroundColor: currentView === 'raw' ? '#4CAF50' : '#f0f0f0',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    color: currentView === 'raw' ? 'white' : 'black'
+                                }}
+                            >
+                                Raw Data
+                            </button>
+                            <button 
+                                onClick={() => setCurrentView('hourly')}
+                                style={{
+                                    padding: '8px 16px',
+                                    backgroundColor: currentView === 'hourly' ? '#4CAF50' : '#f0f0f0',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    color: currentView === 'hourly' ? 'white' : 'black'
+                                }}
+                            >
+                                Hourly
+                            </button>
+                            <button 
+                                onClick={() => setCurrentView('daily')}
+                                style={{
+                                    padding: '8px 16px',
+                                    backgroundColor: currentView === 'daily' ? '#4CAF50' : '#f0f0f0',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    color: currentView === 'daily' ? 'white' : 'black'
+                                }}
+                            >
+                                Daily
+                            </button>
                         </div>
                         <div style={{ height: '300px', width: '100%' }}>
                             <VolumeChart volumeHistory={volumeHistory} />
