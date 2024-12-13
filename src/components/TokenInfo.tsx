@@ -66,7 +66,7 @@ const TokenInfo: React.FC = () => {
     const [currentView, setCurrentView] = useState<'raw' | 'hourly' | 'daily'>('raw');
     const [volumeHistory, setVolumeHistory] = useState<VolumeHistoryData[]>([]);
     const [error, setError] = useState<string>('');
-    const [contractAddress, setContractAddress] = useState<string>('0x43C3EBaFdF32909aC60E80ee34aE46637E743d65');
+    const [contractAddress, setContractAddress] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [dataFetched, setDataFetched] = useState<boolean>(false);
     const [progress, setProgress] = useState<string>('');
@@ -470,33 +470,64 @@ const TokenInfo: React.FC = () => {
                         <div style={{ height: '400px', width: '100%' }}>
                             <PriceChart priceHistory={currentView === 'raw' ? priceHistory : currentView === 'hourly' ? hourlyPrices : dailyPrices} />
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', margin: '10px 0' }}>
+                        <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'center', 
+                            gap: '0px', 
+                            margin: '10px 0',
+                            position: 'relative',
+                            backgroundColor: '#111111',
+                            padding: '4px',
+                            borderRadius: '4px',
+                            width: 'fit-content',
+                            margin: '10px auto'
+                        }}>
+                            <div style={{
+                                position: 'absolute',
+                                left: currentView === 'raw' ? '0%' : currentView === 'hourly' ? '33.33%' : '66.66%',
+                                top: '4px',
+                                bottom: '4px',
+                                width: '33.33%',
+                                backgroundColor: '#000000',
+                                borderRadius: '4px',
+                                transition: 'left 0.3s ease',
+                                border: '1px solid #00ff00',
+                                boxShadow: '0 0 10px #00ff0044'
+                            }}/>
                             <button 
                                 onClick={() => setCurrentView('raw')}
                                 style={{
                                     padding: '8px 16px',
-                                    backgroundColor: currentView === 'raw' ? '#1a1a1a' : '#2d2d2d',
-                                    border: `1px solid ${currentView === 'raw' ? '#00ff00' : '#3d3d3d'}`,
+                                    backgroundColor: 'transparent',
+                                    border: 'none',
                                     borderRadius: '4px',
                                     cursor: 'pointer',
-                                    color: currentView === 'raw' ? '#00ff00' : '#808080',
+                                    color: currentView === 'raw' ? '#00ff00' : '#00ff0088',
                                     transition: 'all 0.3s ease',
-                                    fontSize: '14px'
+                                    fontSize: '14px',
+                                    textShadow: currentView === 'raw' ? '0 0 10px #00ff00' : 'none',
+                                    flex: 1,
+                                    position: 'relative',
+                                    zIndex: 1
                                 }}
                             >
-                                Raw Data
+                                Raw
                             </button>
                             <button 
                                 onClick={() => setCurrentView('hourly')}
                                 style={{
                                     padding: '8px 16px',
-                                    backgroundColor: currentView === 'hourly' ? '#1a1a1a' : '#2d2d2d',
-                                    border: `1px solid ${currentView === 'hourly' ? '#00ff00' : '#3d3d3d'}`,
+                                    backgroundColor: 'transparent',
+                                    border: 'none',
                                     borderRadius: '4px',
                                     cursor: 'pointer',
-                                    color: currentView === 'hourly' ? '#00ff00' : '#808080',
+                                    color: currentView === 'hourly' ? '#00ff00' : '#00ff0088',
                                     transition: 'all 0.3s ease',
-                                    fontSize: '14px'
+                                    fontSize: '14px',
+                                    textShadow: currentView === 'hourly' ? '0 0 10px #00ff00' : 'none',
+                                    flex: 1,
+                                    position: 'relative',
+                                    zIndex: 1
                                 }}
                             >
                                 Hourly
@@ -505,13 +536,17 @@ const TokenInfo: React.FC = () => {
                                 onClick={() => setCurrentView('daily')}
                                 style={{
                                     padding: '8px 16px',
-                                    backgroundColor: currentView === 'daily' ? '#1a1a1a' : '#2d2d2d',
-                                    border: `1px solid ${currentView === 'daily' ? '#00ff00' : '#3d3d3d'}`,
+                                    backgroundColor: 'transparent',
+                                    border: 'none',
                                     borderRadius: '4px',
                                     cursor: 'pointer',
-                                    color: currentView === 'daily' ? '#00ff00' : '#808080',
+                                    color: currentView === 'daily' ? '#00ff00' : '#00ff0088',
                                     transition: 'all 0.3s ease',
-                                    fontSize: '14px'
+                                    fontSize: '14px',
+                                    textShadow: currentView === 'daily' ? '0 0 10px #00ff00' : 'none',
+                                    flex: 1,
+                                    position: 'relative',
+                                    zIndex: 1
                                 }}
                             >
                                 Daily
