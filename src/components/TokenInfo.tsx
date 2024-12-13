@@ -219,13 +219,16 @@ const TokenInfo: React.FC = () => {
             const web3 = new Web3(RPC_URL);
             const contract = new web3.eth.Contract(contractAbi as any, contractAddress);
             
-            // Get total transactions
+            // Get Last Price
             const totalTx = await contract.methods.totalTx().call();
+            const lastTime = await contract.methods.txTimeStamp(totalTx).call();
+            const lastCandle = await contract.methods.candleStickData(lastTime).call();
 
             // Loop through transactions and get candlestick data
             const newPriceHistory = [];
             const newVolumeHistory = [];
             for(let i = 1; i <= totalTx; i++) {
+                if(i == 1) break;
                 setProgress(`${i} / ${totalTx}`);
                 const timestamp = await contract.methods.txTimeStamp(i).call();
                 const candleData = await contract.methods.candleStickData(timestamp).call();
@@ -266,10 +269,12 @@ const TokenInfo: React.FC = () => {
             console.log(newPriceHistory);
             console.log(newVolumeHistory);
 
+            const tokenPrice = Number(lastCandle.close) / (10 ** 45);
+
             const [name, symbol, price, marketCap, circulatingSupply, liquidity] = await Promise.all([
                 contract.methods.name().call(),
                 contract.methods.symbol().call(),
-                contract.methods.getSRGPrice().call(),
+                tokenPrice,
                 contract.methods.getMarketCap().call(),
                 contract.methods.getCirculatingSupply().call(),
                 contract.methods.getLiquidity().call()
@@ -278,12 +283,13 @@ const TokenInfo: React.FC = () => {
             const newTokenData = {
                 name,
                 symbol: symbol,
-                price: formatPrice(price),
+                price: price.toFixed(6),
                 marketCap: formatNumber(marketCap),
                 circulatingSupply: formatNumber(circulatingSupply),
                 liquidity: formatNumber(liquidity)
             };
 
+            console.log(newTokenData.price)
             setTokenData(newTokenData);
             setDataFetched(true);
 
