@@ -211,6 +211,8 @@ const TokenInfo: React.FC = () => {
                 setTokenData(cachedData.tokenData);
                 setDataFetched(true);
                 setIsLoading(false);
+                console.log(cachedData.priceHistory)
+                console.log(cachedData.volumeHistory)   
                 return;
             }
 
@@ -227,27 +229,33 @@ const TokenInfo: React.FC = () => {
                 setProgress(`${i} / ${totalTx}`);
                 const timestamp = await contract.methods.txTimeStamp(i).call();
                 const candleData = await contract.methods.candleStickData(timestamp).call();
-                const txVolume = await contract.methods.tVol(timestamp).call();
-                const tnDate = new Date(Number(timestamp) * 1000).toLocaleString('en-US');
-                const volDate = new Date(Number(timestamp) * 1000).toLocaleDateString('en-US');
-                const existingEntry = newVolumeHistory.find(entry => entry.date === volDate);
-                const closePrice = Number(candleData.close) / (10 ** 45)
-                
-                if (existingEntry) {
-                    // Add to existing volume for this day
-                    existingEntry.volume += Number(txVolume);
+                let txVolume = await contract.methods.tVol(timestamp).call();
+                const date = new Date(Number(timestamp) * 1000).toLocaleDateString('en-US');
+                const closePrice = Number(candleData.close) / (10 ** 45);
+                txVolume = Number(txVolume)  / (10 ** 40);
+
+                // Handle volume history
+                const existingVolumeEntry = newVolumeHistory.find(entry => entry.date === date);
+                if (existingVolumeEntry) {
+                    existingVolumeEntry.volume += Number(txVolume);
                 } else {
-                    // Create new entry for this day
                     newVolumeHistory.push({
-                        date: volDate,
+                        date: date,
                         volume: Number(txVolume),
                     });
                 }
 
-                newPriceHistory.push({
-                    date: tnDate,
-                    price: closePrice,
-                });
+                // Handle price history
+                const existingPriceEntry = newPriceHistory.find(entry => entry.date === date);
+                if (existingPriceEntry) {
+                    // Update to latest price for the day
+                    existingPriceEntry.price = closePrice;
+                } else {
+                    newPriceHistory.push({
+                        date: date,
+                        price: closePrice,
+                    });
+                }
             }
             
             setPriceHistory(newPriceHistory);
