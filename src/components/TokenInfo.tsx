@@ -359,9 +359,19 @@ const TokenInfo: React.FC = () => {
                         <span className="label">Liquidity:</span>
                         <span className="value">${tokenData.liquidity}</span>
                     </div>
-                    <div className="chart-container">
-                        <PriceChart priceHistory={priceHistory} />
-                        <VolumeChart volumeHistory={volumeHistory} />
+                    <div className="chart-container" style={{ 
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '20px',
+                        width: '100%',
+                        marginTop: '20px'
+                    }}>
+                        <div style={{ height: '400px', width: '100%' }}>
+                            <PriceChart priceHistory={priceHistory} />
+                        </div>
+                        <div style={{ height: '300px', width: '100%' }}>
+                            <VolumeChart volumeHistory={volumeHistory} />
+                        </div>
                     </div>
                 </div>
             )}

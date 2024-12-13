@@ -41,6 +41,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ priceHistory }) => {
           color: '#00ff00',
           font: {
             family: "'Courier New', monospace",
+            size: 14
           }
         }
       },
@@ -50,7 +51,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ priceHistory }) => {
         color: '#00ff00',
         font: {
           family: "'Courier New', monospace",
-          size: 16
+          size: 20
         }
       },
       tooltip: {
