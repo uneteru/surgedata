@@ -215,10 +215,31 @@ const TokenInfo: React.FC = () => {
             if (cachedData) {
                 setPriceHistory(cachedData.priceHistory);
                 setVolumeHistory(cachedData.volumeHistory);
+
                 setTokenData(cachedData.tokenData);
                 setDataFetched(true);
                 setIsLoading(false);
-                console.log(cachedData.priceHistory)
+                console.log(cachedData.priceHistory)// Create hourly price array
+                if (cachedData.priceHistory.length > 0) {
+                    const startTime = new Date(cachedData.priceHistory[0].date);
+                    const endTime = new Date(cachedData.priceHistory[cachedData.priceHistory.length - 1].date);
+                    const hourlyPrices = [];
+                    
+                    for (let currentTime = startTime; currentTime <= endTime; currentTime.setHours(currentTime.getHours() + 1)) {
+                        // Find the last price before or at this time
+                        const lastPrice = cachedData.priceHistory.findLast(
+                            entry => new Date(entry.date) <= currentTime
+                        );
+                        
+                        if (lastPrice) {
+                            hourlyPrices.push({
+                                date: currentTime.toISOString(),
+                                price: lastPrice.price
+                            });
+                        }
+                    }
+                    console.log('Hourly prices:', hourlyPrices);
+                }
                 console.log(cachedData.volumeHistory)   
                 return;
             }
@@ -236,7 +257,6 @@ const TokenInfo: React.FC = () => {
             const newPriceHistory = [];
             const newVolumeHistory = [];
             for(let i = 1; i <= totalTx; i++) {
-                if(i == 1) break;
                 setProgress(`${i} / ${totalTx}`);
                 const timestamp = await contract.methods.txTimeStamp(i).call();
                 const candleData = await contract.methods.candleStickData(timestamp).call();
