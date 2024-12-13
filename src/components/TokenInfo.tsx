@@ -224,9 +224,7 @@ const TokenInfo: React.FC = () => {
             const newPriceHistory = [];
             const newVolumeHistory = [];
             for(let i = 1; i <= totalTx; i++) {
-                //if(i == 10) break;
                 setProgress(`${i} / ${totalTx}`);
-                console.log(i);
                 const timestamp = await contract.methods.txTimeStamp(i).call();
                 const candleData = await contract.methods.candleStickData(timestamp).call();
                 const txVolume = await contract.methods.tVol(timestamp).call();
@@ -269,6 +267,7 @@ const TokenInfo: React.FC = () => {
 
             const newTokenData = {
                 name,
+                symbol: symbol,
                 price: formatPrice(price),
                 marketCap: formatNumber(marketCap),
                 circulatingSupply: formatNumber(circulatingSupply),
@@ -335,7 +334,7 @@ const TokenInfo: React.FC = () => {
 
             {!isLoading && dataFetched && (
                 <div className="token-details matrix-data">
-                    <h2 className="glow">{tokenData.name} {tokenData.symbol}</h2>
+                    <h2 className="glow">{tokenData.name} - {tokenData.symbol}</h2>
                     <div className="data-row">
                         <span className="label">Price:</span>
                         <span className="value">{tokenData.price} SRG</span>
