@@ -68,7 +68,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ priceHistory }) => {
         },
         callbacks: {
           label: function(context: any) {
-            return `Price: $${context.parsed.y.toFixed(8)}`;
+            return `Price: $${context.parsed.y.toFixed(3)}`;
           }
         }
       }
@@ -118,7 +118,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ priceHistory }) => {
             family: "'Courier New', monospace"
           },
           callback: function(value: any) {
-            return '$' + Number(value).toFixed(8);
+            return '$' + Number(value).toFixed(3);
           }
         },
         grid: {
