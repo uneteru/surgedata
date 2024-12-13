@@ -78,15 +78,19 @@ const VolumeChart: React.FC<VolumeChartProps> = ({ volumeHistory }) => {
         }
       },
       y: {
-        grid: {
-          color: 'rgba(0, 255, 0, 0.1)',
-        },
         ticks: {
           color: '#00ff00',
           font: {
             family: "'Courier New', monospace"
+          },
+          callback: function(value: any) {
+            return value.toFixed(2); // Format volume with 2 decimal places
           }
-        }
+        },
+        grid: {
+          color: '#003300'
+        },
+        beginAtZero: true
       }
     }
   };

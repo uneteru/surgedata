@@ -73,6 +73,26 @@ const PriceChart: React.FC<PriceChartProps> = ({ priceHistory }) => {
         }
       }
     },
+    elements: {
+      line: {
+        tension: 0.4,  // Makes the line smoother
+        borderWidth: 2,
+        borderColor: '#00ff00',
+        fill: true,
+        backgroundColor: (context: any) => {
+          const ctx = context.chart.ctx;
+          const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+          gradient.addColorStop(0, 'rgba(0, 255, 0, 0.2)');
+          gradient.addColorStop(1, 'rgba(0, 255, 0, 0)');
+          return gradient;
+        }
+      },
+      point: {
+        radius: 0,  // Hides the points
+        hitRadius: 10,  // Area around point that will register hover
+        hoverRadius: 4  // Size of point when hovering
+      }
+    },
     scales: {
       x: {
         ticks: {
@@ -83,10 +103,11 @@ const PriceChart: React.FC<PriceChartProps> = ({ priceHistory }) => {
           maxRotation: 45,
           minRotation: 45,
           autoSkip: true,
-          maxTicksLimit: 24 // Show 24 ticks max to prevent overcrowding
+          maxTicksLimit: 12  // Show fewer ticks for cleaner look
         },
         grid: {
-          color: '#003300'
+          color: '#003300',
+          drawBorder: false
         }
       },
       y: {
@@ -100,26 +121,26 @@ const PriceChart: React.FC<PriceChartProps> = ({ priceHistory }) => {
           }
         },
         grid: {
-          color: '#003300'
+          color: '#003300',
+          drawBorder: false
         }
       }
+    },
+    interaction: {
+      intersect: false,
+      mode: 'index'
     }
   };
 
   const data = {
-    labels: priceHistory.map(item => new Date(item.date).toLocaleDateString()),
+    labels: priceHistory.map(entry => entry.date),
     datasets: [
       {
         label: 'Price (SRG)',
-        data: priceHistory.map(item => item.price),
+        data: priceHistory.map(entry => entry.price),
         borderColor: '#00ff00',
-        backgroundColor: 'rgba(0, 255, 0, 0.5)',
-        borderWidth: 2,
-        pointBackgroundColor: '#00ff00',
-        pointBorderColor: '#000',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: '#00ff00',
-        tension: 0.4
+        backgroundColor: 'rgba(0, 255, 0, 0.1)',
+        pointHoverBackgroundColor: '#00ff00'
       }
     ]
   };

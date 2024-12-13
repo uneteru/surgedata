@@ -236,7 +236,8 @@ const TokenInfo: React.FC = () => {
                 // Keep daily format for volume
                 const volumeDate = fullDate.toLocaleDateString('en-US');
                 const closePrice = Number(candleData.close) / (10 ** 45);
-                txVolume = Number(txVolume)  / (10 ** 40);
+                // Adjust volume scaling to make it more visible
+                txVolume = Number(txVolume) / (10 ** 18);
 
                 // Handle volume history (keep daily)
                 const existingVolumeEntry = newVolumeHistory.find(entry => entry.date === volumeDate);
