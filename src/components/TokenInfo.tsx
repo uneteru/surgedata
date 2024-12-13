@@ -219,7 +219,6 @@ const TokenInfo: React.FC = () => {
                 setTokenData(cachedData.tokenData);
                 setDataFetched(true);
                 setIsLoading(false);
-                console.log(cachedData.priceHistory)// Create hourly price array
                 if (cachedData.priceHistory.length > 0) {
                     const startTime = new Date(cachedData.priceHistory[0].date);
                     const endTime = new Date(); // Current time dynamically
@@ -227,7 +226,7 @@ const TokenInfo: React.FC = () => {
                     const dailyPrices = [];
                     
                     // Hourly prices
-                    for (let currentTime = startTime; currentTime <= endTime; currentTime.setHours(currentTime.getHours() + 1)) {
+                    for (let currentTime = new Date(startTime); currentTime <= endTime; currentTime.setHours(currentTime.getHours() + 1)) {
                         // Find the last price before or at this time
                         const lastPrice = cachedData.priceHistory.findLast(
                             entry => new Date(entry.date) <= currentTime
@@ -244,14 +243,10 @@ const TokenInfo: React.FC = () => {
                     console.log('Hourly prices:', hourlyPrices);
 
                     // Daily prices
-                    const dailyStartTime = new Date(startTime);
-                    dailyStartTime.setHours(0, 0, 0, 0); // Start at beginning of the day
-                    
-                    for (let currentTime = dailyStartTime; currentTime <= endTime; currentTime.setDate(currentTime.getDate() + 1)) {
+                    for (let currentTime = new Date(startTime); currentTime <= endTime; currentTime.setDate(currentTime.getDate() + 1)) {
                         const lastPrice = cachedData.priceHistory.findLast(
                             entry => new Date(entry.date) <= currentTime
                         );
-                        console.log(lastPrice)
                         
                         if (lastPrice) {
                             dailyPrices.push({
