@@ -96,6 +96,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ priceHistory }) => {
     scales: {
       x: {
         ticks: {
+          display: false,  // Hide x-axis labels
           color: '#00ff00',
           font: {
             family: "'Courier New', monospace"

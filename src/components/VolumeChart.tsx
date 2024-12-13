@@ -67,14 +67,15 @@ const VolumeChart: React.FC<VolumeChartProps> = ({ volumeHistory }) => {
     },
     scales: {
       x: {
-        grid: {
-          color: 'rgba(0, 255, 0, 0.1)',
-        },
         ticks: {
+          display: false,
           color: '#00ff00',
           font: {
             family: "'Courier New', monospace"
           }
+        },
+        grid: {
+          color: 'rgba(0, 255, 0, 0.1)',
         }
       },
       y: {
