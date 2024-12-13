@@ -107,7 +107,7 @@ const VolumeChart: React.FC<VolumeChartProps> = ({ volumeHistory }) => {
   };
 
   return (
-    <div style={{ height: '500px', marginTop: '20px' }}>
+    <div style={{ height: '300px', marginTop: '20px' }}>
       <Bar options={options} data={data} />
     </div>
   );
