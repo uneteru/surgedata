@@ -475,11 +475,13 @@ const TokenInfo: React.FC = () => {
                                 onClick={() => setCurrentView('raw')}
                                 style={{
                                     padding: '8px 16px',
-                                    backgroundColor: currentView === 'raw' ? '#4CAF50' : '#f0f0f0',
-                                    border: 'none',
+                                    backgroundColor: currentView === 'raw' ? '#1a1a1a' : '#2d2d2d',
+                                    border: `1px solid ${currentView === 'raw' ? '#00ff00' : '#3d3d3d'}`,
                                     borderRadius: '4px',
                                     cursor: 'pointer',
-                                    color: currentView === 'raw' ? 'white' : 'black'
+                                    color: currentView === 'raw' ? '#00ff00' : '#808080',
+                                    transition: 'all 0.3s ease',
+                                    fontSize: '14px'
                                 }}
                             >
                                 Raw Data
@@ -488,11 +490,13 @@ const TokenInfo: React.FC = () => {
                                 onClick={() => setCurrentView('hourly')}
                                 style={{
                                     padding: '8px 16px',
-                                    backgroundColor: currentView === 'hourly' ? '#4CAF50' : '#f0f0f0',
-                                    border: 'none',
+                                    backgroundColor: currentView === 'hourly' ? '#1a1a1a' : '#2d2d2d',
+                                    border: `1px solid ${currentView === 'hourly' ? '#00ff00' : '#3d3d3d'}`,
                                     borderRadius: '4px',
                                     cursor: 'pointer',
-                                    color: currentView === 'hourly' ? 'white' : 'black'
+                                    color: currentView === 'hourly' ? '#00ff00' : '#808080',
+                                    transition: 'all 0.3s ease',
+                                    fontSize: '14px'
                                 }}
                             >
                                 Hourly
@@ -501,11 +505,13 @@ const TokenInfo: React.FC = () => {
                                 onClick={() => setCurrentView('daily')}
                                 style={{
                                     padding: '8px 16px',
-                                    backgroundColor: currentView === 'daily' ? '#4CAF50' : '#f0f0f0',
-                                    border: 'none',
+                                    backgroundColor: currentView === 'daily' ? '#1a1a1a' : '#2d2d2d',
+                                    border: `1px solid ${currentView === 'daily' ? '#00ff00' : '#3d3d3d'}`,
                                     borderRadius: '4px',
                                     cursor: 'pointer',
-                                    color: currentView === 'daily' ? 'white' : 'black'
+                                    color: currentView === 'daily' ? '#00ff00' : '#808080',
+                                    transition: 'all 0.3s ease',
+                                    fontSize: '14px'
                                 }}
                             >
                                 Daily
