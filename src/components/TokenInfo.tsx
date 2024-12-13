@@ -222,9 +222,11 @@ const TokenInfo: React.FC = () => {
                 console.log(cachedData.priceHistory)// Create hourly price array
                 if (cachedData.priceHistory.length > 0) {
                     const startTime = new Date(cachedData.priceHistory[0].date);
-                    const endTime = new Date(cachedData.priceHistory[cachedData.priceHistory.length - 1].date);
+                    const endTime = new Date(); // Current time dynamically
                     const hourlyPrices = [];
+                    const dailyPrices = [];
                     
+                    // Hourly prices
                     for (let currentTime = startTime; currentTime <= endTime; currentTime.setHours(currentTime.getHours() + 1)) {
                         // Find the last price before or at this time
                         const lastPrice = cachedData.priceHistory.findLast(
@@ -238,7 +240,27 @@ const TokenInfo: React.FC = () => {
                             });
                         }
                     }
+                    setPriceHistory(hourlyPrices);
                     console.log('Hourly prices:', hourlyPrices);
+
+                    // Daily prices
+                    const dailyStartTime = new Date(startTime);
+                    dailyStartTime.setHours(0, 0, 0, 0); // Start at beginning of the day
+                    
+                    for (let currentTime = dailyStartTime; currentTime <= endTime; currentTime.setDate(currentTime.getDate() + 1)) {
+                        const lastPrice = cachedData.priceHistory.findLast(
+                            entry => new Date(entry.date) <= currentTime
+                        );
+                        console.log(lastPrice)
+                        
+                        if (lastPrice) {
+                            dailyPrices.push({
+                                date: currentTime.toISOString(),
+                                price: lastPrice.price
+                            });
+                        }
+                    }
+                    console.log('Daily prices:', dailyPrices);
                 }
                 console.log(cachedData.volumeHistory)   
                 return;
