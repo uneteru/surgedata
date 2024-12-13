@@ -230,33 +230,34 @@ const TokenInfo: React.FC = () => {
                 const timestamp = await contract.methods.txTimeStamp(i).call();
                 const candleData = await contract.methods.candleStickData(timestamp).call();
                 let txVolume = await contract.methods.tVol(timestamp).call();
-                const date = new Date(Number(timestamp) * 1000).toLocaleDateString('en-US');
+                // Format date with hours for price history
+                const fullDate = new Date(Number(timestamp) * 1000);
+                const priceDate = fullDate.toLocaleString('en-US');
+                // Keep daily format for volume
+                const volumeDate = fullDate.toLocaleDateString('en-US');
                 const closePrice = Number(candleData.close) / (10 ** 45);
                 txVolume = Number(txVolume)  / (10 ** 40);
 
-                // Handle volume history
-                const existingVolumeEntry = newVolumeHistory.find(entry => entry.date === date);
+                // Handle volume history (keep daily)
+                const existingVolumeEntry = newVolumeHistory.find(entry => entry.date === volumeDate);
                 if (existingVolumeEntry) {
-                    existingVolumeEntry.volume += Number(txVolume);
+                    existingVolumeEntry.volume += txVolume;
                 } else {
                     newVolumeHistory.push({
-                        date: date,
-                        volume: Number(txVolume),
+                        date: volumeDate,
+                        volume: txVolume,
                     });
                 }
 
-                // Handle price history
-                const existingPriceEntry = newPriceHistory.find(entry => entry.date === date);
-                if (existingPriceEntry) {
-                    // Update to latest price for the day
-                    existingPriceEntry.price = closePrice;
-                } else {
-                    newPriceHistory.push({
-                        date: date,
-                        price: closePrice,
-                    });
-                }
+                // Add hourly price entry (no aggregation needed)
+                newPriceHistory.push({
+                    date: priceDate,
+                    price: closePrice,
+                });
             }
+
+            // Sort price history by date
+            newPriceHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
             
             setPriceHistory(newPriceHistory);
             setVolumeHistory(newVolumeHistory);

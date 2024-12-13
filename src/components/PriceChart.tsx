@@ -47,7 +47,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ priceHistory }) => {
       },
       title: {
         display: true,
-        text: 'Price History',
+        text: 'Hourly Price History',
         color: '#00ff00',
         font: {
           family: "'Courier New', monospace",
@@ -65,30 +65,42 @@ const PriceChart: React.FC<PriceChartProps> = ({ priceHistory }) => {
         },
         bodyFont: {
           family: "'Courier New', monospace"
+        },
+        callbacks: {
+          label: function(context: any) {
+            return `Price: $${context.parsed.y.toFixed(8)}`;
+          }
         }
       }
     },
     scales: {
       x: {
-        grid: {
-          color: 'rgba(0, 255, 0, 0.1)',
-        },
         ticks: {
           color: '#00ff00',
           font: {
             family: "'Courier New', monospace"
-          }
+          },
+          maxRotation: 45,
+          minRotation: 45,
+          autoSkip: true,
+          maxTicksLimit: 24 // Show 24 ticks max to prevent overcrowding
+        },
+        grid: {
+          color: '#003300'
         }
       },
       y: {
-        grid: {
-          color: 'rgba(0, 255, 0, 0.1)',
-        },
         ticks: {
           color: '#00ff00',
           font: {
             family: "'Courier New', monospace"
+          },
+          callback: function(value: any) {
+            return '$' + Number(value).toFixed(8);
           }
+        },
+        grid: {
+          color: '#003300'
         }
       }
     }
